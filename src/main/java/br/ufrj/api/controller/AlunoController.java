@@ -11,20 +11,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/aluno")
 public class AlunoController {
-    private final AlunoRepository alunoRepository;
     private final AlunoService alunoService;
-    private final SituacaoMatriculaService situacaoMatriculaService;
 
-    public AlunoController(AlunoRepository alunoRepository, AlunoService alunoService, SituacaoMatriculaService situacaoMatriculaService) {
-        this.alunoRepository = alunoRepository;
+    public AlunoController(AlunoService alunoService) {
         this.alunoService = alunoService;
-        this.situacaoMatriculaService = situacaoMatriculaService;
     }
     @GetMapping("")
     public List<Aluno> findAll(){
-        return alunoRepository.findAll();
+        return alunoService.findAll();
     }
 
     @GetMapping("/{matricula}")
@@ -34,26 +31,18 @@ public class AlunoController {
     }
     @PostMapping(path = "/novo", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public Aluno createAluno(@RequestParam String nome, @RequestParam String matricula, @RequestParam String hobbies){
-        Aluno aluno = new Aluno();
-        aluno.setNome(nome);
-        aluno.setHobbies(hobbies);
-        aluno.setMatricula(matricula);
-        SituacaoMatricula ativo = situacaoMatriculaService.findByCodigo(SituacaoMatricula.ATIVO);
-        aluno.setSituacaoMatricula(ativo);
-        return alunoRepository.save(aluno);
+        return alunoService.novoAluno(nome, matricula, hobbies);
     }
     @DeleteMapping("/{matricula}")
     public String deleteAluno(@PathVariable String matricula){
-        Aluno aluno = alunoService.getAlunoByMatricula(matricula);
-        alunoRepository.delete(aluno);
-        return "Aluno deletado";
+        return alunoService.deleteAluno(matricula);
     }
     @PutMapping(path = "/{matriculaAtual}", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public Aluno updateAluno(@PathVariable String matriculaAtual, @RequestParam String nome, @RequestParam String matricula, @RequestParam String hobbies){
-        Aluno aluno = alunoService.getAlunoByMatricula(matriculaAtual);
-        aluno.setNome(nome);
-        aluno.setMatricula(matricula);
-        aluno.setHobbies(hobbies);
-        return alunoRepository.save(aluno);
+        return alunoService.updateAluno(matriculaAtual, nome, matricula, hobbies);
+    }
+    @PutMapping(path = "/cancelarMatricula/{matriculaAtual}")
+    public Aluno cancelarMatricula(@PathVariable String matriculaAtual){
+        return alunoService.cancelarMatricula(matriculaAtual);
     }
 }
